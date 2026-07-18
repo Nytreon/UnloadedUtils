@@ -1,4 +1,4 @@
-## Unloaded Utils
+# Unloaded Utils
 ## Made by Nytreon
 **Unloaded Utils** Interacts with unloaded chunks using Bedrock engine primitives and abstracts them for the Minecraft Bedrock Script API (`@minecraft/server`). It bypasses engine limitations by allowing developers to get, set, fill, clone blocks, and spawn entities in unloaded chunks without throwing errors or breaking the game state.
 
@@ -19,9 +19,9 @@ Unloaded Chunk Manipulation: Set, fill, and clone blocks in areas players haven'
 - When queuing in invalid chunks the game's engine queues the structure ID not the structure content so if you write new blocks using the API it will write the new blocks instead when the area is rendered! (I have yet to come up with a good fix for this)
 - when doing /reload stuff might break due to an optimization I made.... if you hate this fact just change just change line 231 to use a set value of 2 instead of the delay variable. I will be making it more robust later.
 
- ## API Reference
+ # API Reference
 
-### Methods
+## Methods
 
 | Method | Parameters | Return Type | Description |
 | --- | --- | --- | --- |
