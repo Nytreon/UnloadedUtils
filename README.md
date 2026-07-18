@@ -15,9 +15,10 @@ Unloaded Chunk Manipulation: Set, fill, and clone blocks in areas players haven'
 # Prerequisites & Setup
 "mystructure:UnloadedWriter" is an NBT-edited structure block structure required for the _createBlocks primitive pipeline just put the .mcstructure into your ./structures directory to get everything going!.
 
-# Known bugs! 
+# Things to keep note of! 
 - When queuing in invalid chunks the game's engine queues the structure ID not the structure content so if you write new blocks using the API it will write the new blocks instead when the area is rendered! (I have yet to come up with a good fix for this)
-- when doing /reload stuff might break due to an optimization I made.... if you hate this fact just change just change line 231 to use a set value of 2 instead of the delay variable. I will be making it more robust later.
+- Not all unloaded chunks are created equal and some are read-only for this reason write operations are limited to writable unloaded chunks (mainly ones within render distance).
+
 
  # API Reference
 
@@ -27,12 +28,13 @@ Unloaded Chunk Manipulation: Set, fill, and clone blocks in areas players haven'
 | --- | --- | --- | --- |
 | `setBlock()` | `pos`, `dimension`, `blockType` | `Promise<void>` | Sets a single block at the target location, even if unloaded. |
 | `clone()` | `from`, `to`, `pos`, `dimension` | `Promise<void>` | Clones a volume of blocks to an unloaded target position. |
-| `fillBlocks()` | `from`, `to`, `dimension`, `blockType` | `Promise<void>` | Fills a specified volume with a block type in unloaded chunks. |
+| `fillBlocks()` | `from`, `to`, `dimension`, `blockType` | `Promise<void>` | Fills a specified volume with a block type in writable unloaded chunks. |
 | `getBlock()` | `pos`, `dimension` | `Promise<VBlock>` | Fetches a virtual block reference (`VBlock`) for an unloaded block. |
 | `spawn()` | `pos`, `dimension`, `entityType`, `options` | `void` | Spawns an entity safely at any global coordinate. |
 | `getChunkState()` | `dimension`, `pos` | `1 ⏐ 0 ⏐ -1` | Returns `1` (Loaded), `0` (Unloaded), or `-1` (Invalid). |
 | `tickArea()` | `pos`, `ticks`, `dimension` | `Promise<void>` | Creates a temporary ticking area at a location for a set duration. |
 | `setOffset()` | `offset` | `void` | Adjusts the safe coordinate offset zone (Default: `4000000`). |
+| `cacheChunk()` | `pos`, `dimension` | `void` | Caches a given position as a read-only chunk. |
 
 ---
 
@@ -82,3 +84,4 @@ As you may know, normally when interacting with unloaded chunks, script API will
 - **Setting**: Normally there is absolutely no way to be able to write to these chunks, however there is one thing that can write arbitrary data to these chunks, **Structure blocks**! By setting a ticking area 4 million blocks out and then NBT editing a structure block to be able to be pushed beyond the normal 99k bound I can have a write primative to these chunks!
 - **Getting**: Luckily this time around the API does provide a roundabout way to access blocks in these chunks. The createFromWorld function does not throw errors in these chunks allowing me to grab a structure, put it 4 million blocks out and read the content! After that I wrap the data and a few custom callbacks for live data in a VBlock (Virtual Block) and return that to the end user allowing them to dynamically call the block as if it was a real one!
 - **Spawning**: This one was by far the easiest! All it does is find a player, spawn an entity at y 320, and then teleport them to the target area. This works because ScriptAPI all fires in one subtick so functionally it was like the entity spawned there.
+- **Caching**: I found out that if you move the player spawn into an invalid chunk it will become cached, so I simply record the current spawn position, set their spawn position to my desired chunk to cache, and then set it back to what it was previously.
