@@ -1,5 +1,6 @@
 import { system, world, BlockVolume } from "@minecraft/server"
 const startUpTick = system.currentTick;
+let hasReloaded = false;
 
 //Unloaded Utils V1.0 by Nytreon
 
@@ -99,6 +100,15 @@ export const UnloadedUtils = {
 		this.safeOffset = offset;
 	},
 
+	//creates a read only unloaded chunk from an invalid chunk
+	cacheChunk(pos, dimension) {
+		const players = world.getPlayers();
+		const target = players[0];
+		const currentSpawn = target.getSpawnPoint();
+		target.setSpawnPoint({dimension, ...pos})
+		target.setSpawnPoint(currentSpawn)
+	},
+
 	//allow "force" spawning anywhere
 	spawn(pos, dimension, entityType, entityOptions) {
 		const players = world.getPlayers();
@@ -195,6 +205,7 @@ export const UnloadedUtils = {
 		return dimension.getBlock(p);
 	},
 
+
 	//function so I don't have to retype stuff
 	async _createBlocks(dimension, tempFrom, tempTo, operationCallback, structurePos) {
 		const id = `fc_temp_${system.currentTick}_${Math.floor(Math.random() * 1e6)}`;
@@ -213,13 +224,12 @@ export const UnloadedUtils = {
 		try {
 		    await operationCallback();
 
-			//align with P and C ticks to save a tick when I can 
-			//NOTE: yeaaahhhhh this doesn't work too well when you do /reload, will have to come up with a better solution later...
-		    const delay = ((system.currentTick - startUpTick) & 1) === 0 ? 1 : 2;
+			//align with P and C ticks to save a tick when I can
+		    const delay = (((system.currentTick - startUpTick) & 1) === 0) && hasReloaded == false ? 1 : 2;
 
 			//place NBT edited structure block
 		    this.structManager.place("mystructure:UnloadedWriter", dimension, structurePos);
-	    
+
 			//trigger and cleanup
 		    system.runTimeout(() => {
 		        dimension.setBlockType(t, "redstone_block");
@@ -365,3 +375,10 @@ export const UnloadedUtils = {
 	}
 
 }
+
+//for reloading
+world.afterEvents.worldLoad.subscribe(() => {
+	const players = world.getAllPlayers();
+	if (players[0]?.isValid)
+		hasReloaded = true;
+});
