@@ -1,6 +1,6 @@
 ## Unloaded Utils
 ## Made by Nytreon
-**Unloaded Utils** is a powerful JavaScript utility library for the Minecraft Bedrock Script API (`@minecraft/server`). It bypasses engine limitations by allowing developers to get, set, fill, clone blocks, and spawn entities in unloaded chunks without throwing errors or breaking the game state.
+**Unloaded Utils** Interacts with unloaded chunks using Bedrock engine primitives and abstracts them for the Minecraft Bedrock Script API (`@minecraft/server`). It bypasses engine limitations by allowing developers to get, set, fill, clone blocks, and spawn entities in unloaded chunks without throwing errors or breaking the game state.
 
 Using a combination of tricks this utility makes the impossible possible in Bedrock scripting.
 
