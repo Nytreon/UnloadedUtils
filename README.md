@@ -18,6 +18,7 @@ Unloaded Chunk Manipulation: Set, fill, and clone blocks in areas players haven'
 # Things to keep note of! 
 - When queuing an invalid chunks or read-only unloaded chunk, the game's engine queues the structure ID not the structure content so if you write new blocks using the API it will write the new blocks instead when the area is rendered! (I have yet to come up with a good fix for this)
 - Not all unloaded chunks are created equal and some are read-only for this reason write operations are limited to writable unloaded chunks (mainly ones within render distance).
+- getChunkState has to be under the assumption you are playing on a world with a bedrock layer unfortunately. Until I find a more robust solution this is what I have.
 
 
  # API Reference
