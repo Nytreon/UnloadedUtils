@@ -35,7 +35,7 @@ Unloaded Chunk Manipulation: Set, fill, and clone blocks in areas players haven'
 | `tickArea()` | `pos`, `ticks`, `dimension` | `Promise<void>` | Creates a temporary ticking area at a location for a set duration. |
 | `setOffset()` | `offset` | `void` | Adjusts the safe coordinate offset zone (Default: `4000000`). |
 | `cacheChunk()` | `pos`, `dimension` | `void` | Caches a given position as a read-only chunk. |
-| `fastDeclareTickingArea()` | `id`, `ticking options` | `Promise<void>` | Declares a ticking area much faster than the normal ticking await 8 tick convention to only 3. |
+| `fastDeclareTickingArea()` | `id`, `ticking options` | `Promise<void>` | Declares a ticking area much faster than the normal ticking await 8 tick convention getting it down to only 2 ticks in most cases. |
 
 ---
 
