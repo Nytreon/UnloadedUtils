@@ -16,7 +16,7 @@ Unloaded Chunk Manipulation: Set, fill, and clone blocks in areas players haven'
 "mystructure:UnloadedWriter" is an NBT-edited structure block structure required for the _createBlocks primitive pipeline just put the .mcstructure into your ./structures directory to get everything going!.
 
 # Things to keep note of! 
-- When queuing in invalid chunks the game's engine queues the structure ID not the structure content so if you write new blocks using the API it will write the new blocks instead when the area is rendered! (I have yet to come up with a good fix for this)
+- When queuing an invalid chunks or read-only unloaded chunk, the game's engine queues the structure ID not the structure content so if you write new blocks using the API it will write the new blocks instead when the area is rendered! (I have yet to come up with a good fix for this)
 - Not all unloaded chunks are created equal and some are read-only for this reason write operations are limited to writable unloaded chunks (mainly ones within render distance).
 
 
