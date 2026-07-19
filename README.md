@@ -31,11 +31,11 @@ Unloaded Chunk Manipulation: Set, fill, and clone blocks in areas players haven'
 | `fillBlocks()` | `from`, `to`, `dimension`, `blockType` | `Promise<void>` | Fills a specified volume with a block type in writable unloaded chunks. |
 | `getBlock()` | `pos`, `dimension` | `Promise<VBlock>` | Fetches a virtual block reference (`VBlock`) for an unloaded block. |
 | `spawn()` | `pos`, `dimension`, `entityType`, `options` | `void` | Spawns an entity safely at any global coordinate. |
-| `getChunkState()` | `dimension`, `pos` | `1 ⏐ 0 ⏐ -1` | Returns `1` (Loaded), `0` (Unloaded), or `-1` (Invalid). |
+| `getChunkState()` | `dimension`, `pos` | `1 or 0 or -1` | Returns `1` (Loaded), `0` (Unloaded), or `-1` (Invalid). |
 | `tickArea()` | `pos`, `ticks`, `dimension` | `Promise<void>` | Creates a temporary ticking area at a location for a set duration. |
 | `setOffset()` | `offset` | `void` | Adjusts the safe coordinate offset zone (Default: `4000000`). |
 | `cacheChunk()` | `pos`, `dimension` | `void` | Caches a given position as a read-only chunk. |
-| `fastDeclareTickingArea()` | `id`, `ticking options`, `"read" ⏐ "write"` | `Promise<void>` | Declares a ticking area much faster than the normal ticking await convention to only 2 to 3 ticks compared to the 8 normally. |
+| `fastDeclareTickingArea()` | `id`, `ticking options`, `"read" or "write"` | `Promise<void>` | Declares a ticking area much faster than the normal ticking await convention to only 2 to 3 ticks compared to the 8 normally. |
 
 ---
 
