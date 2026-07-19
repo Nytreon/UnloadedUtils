@@ -174,35 +174,37 @@ export const UnloadedUtils = {
 
 	//returns short lived block reference 
 	async _getClonedReference(pos, dimension) {
-		const id = `fc_temp_${system.currentTick}_${Math.floor(Math.random() * 1e6)}`;
-		const structure = `fc:temp_${system.currentTick}_${Math.floor(Math.random() * 1e6)}`;
-		const blockPos = this._toBlockPos(pos)
-		const p = { x: this.safeOffset, y: 0, z: this.safeOffset };
+		return new Promise((resolve, reject) => {
+			const id = `fc_temp_${system.currentTick}_${Math.floor(Math.random() * 1e6)}`;
+			const structure = `fc:temp_${system.currentTick}_${Math.floor(Math.random() * 1e6)}`;
+			const blockPos = this._toBlockPos(pos)
+			const p = { x: this.safeOffset, y: 0, z: this.safeOffset };
 
-		await this.tickManager.createTickingArea(id, {
-			dimension,
-			from: p,
-			to: p
-		});
-
-		try {
-			//save structure works in unloaded chunks btw
-			this.structManager.createFromWorld(
-				structure,
+			this.fastDeclareTickingArea(id, {
 				dimension,
-				blockPos,
-				blockPos,
-				{ includeEntities: false }
-			);
+				from: p,
+				to: p
+			});
 
-			this.structManager.place(structure, dimension, p);
-			this.structManager.delete(structure);
-		} finally {
-			this.tickManager.removeTickingArea(id);
-		}
+			try {
+				//save structure works in unloaded chunks btw
+				this.structManager.createFromWorld(
+					structure,
+					dimension,
+					blockPos,
+					blockPos,
+					{ includeEntities: false }
+				);
 
-		//as long as the processing happens before the world updates the ref still exists
-		return dimension.getBlock(p);
+				this.structManager.place(structure, dimension, p);
+				this.structManager.delete(structure);
+			} finally {
+				this.tickManager.removeTickingArea(id);
+			}
+
+			//as long as the processing happens before the world updates the ref still exists
+			resolve(dimension.getBlock(p));
+		});
 	},
 
 
@@ -215,34 +217,47 @@ export const UnloadedUtils = {
 		if (this.structManager.get(writer))
 	        this.structManager.delete(writer);
 
-		await this.tickManager.createTickingArea(id, {
+		await this.fastDeclareTickingArea(id, {
 		    dimension,
 		    from: tempFrom,
 		    to: tempTo
 		});
 
-		try {
-		    await operationCallback();
+		return new Promise((resolve, reject) => {
+			try {
+				operationCallback();
 
-			//align with P and C ticks to save a tick when I can
-		    const delay = (((system.currentTick - startUpTick) & 1) === 0) && hasReloaded == false ? 1 : 2;
+				//align with P and C ticks to save a tick when I can
+				const delay = (((system.currentTick - startUpTick) & 1) === 0) && hasReloaded == false ? 1 : 2;
 
-			//place NBT edited structure block
-		    this.structManager.place("mystructure:UnloadedWriter", dimension, structurePos);
+					//place NBT edited structure block
+				this.structManager.place("mystructure:UnloadedWriter", dimension, structurePos);
 
-			//trigger and cleanup
-		    system.runTimeout(() => {
-		        dimension.setBlockType(t, "redstone_block");
-		        system.runTimeout(() => {
-		            dimension.setBlockType(t, "air");
-		            dimension.fillBlocks(new BlockVolume(tempFrom, tempTo), "air");
-		            this.tickManager.removeTickingArea(id);
-		        }, 3);
-		    }, delay);
-		} catch (e) {
-		    this.tickManager.removeTickingArea(id);
-		    throw e; 
-		}
+					//trigger and cleanup
+				system.runTimeout(() => {
+					dimension.setBlockType(t, "redstone_block");
+					system.runTimeout(() => {
+						dimension.setBlockType(t, "air");
+						dimension.fillBlocks(new BlockVolume(tempFrom, tempTo), "air");
+						this.tickManager.removeTickingArea(id);
+						resolve();
+					}, 3);
+				}, delay);
+			} catch (e) {
+				this.tickManager.removeTickingArea(id);
+				throw e; 
+			}
+		})
+	},
+
+	//mojank waits 8 ticks before resolving the promise when it is writable at 3 and readable at 2.
+	async fastDeclareTickingArea(id, options, accessedNeeded) {
+		return new Promise((resolve, reject) => {
+			this.tickManager.createTickingArea(id, options);
+			system.runTimeout(() => {
+				resolve();
+			}, (accessedNeeded === "read" ? 2 : 3));
+		})
 	},
 
 	//construct virtual block object
@@ -376,7 +391,6 @@ export const UnloadedUtils = {
 
 }
 
-//for reloading
 world.afterEvents.worldLoad.subscribe(() => {
 	const players = world.getAllPlayers();
 	if (players[0]?.isValid)
