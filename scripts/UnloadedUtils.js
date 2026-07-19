@@ -174,37 +174,35 @@ export const UnloadedUtils = {
 
 	//returns short lived block reference 
 	async _getClonedReference(pos, dimension) {
-		return new Promise((resolve, reject) => {
-			const id = `fc_temp_${system.currentTick}_${Math.floor(Math.random() * 1e6)}`;
-			const structure = `fc:temp_${system.currentTick}_${Math.floor(Math.random() * 1e6)}`;
-			const blockPos = this._toBlockPos(pos)
-			const p = { x: this.safeOffset, y: 0, z: this.safeOffset };
+		const id = `fc_temp_${system.currentTick}_${Math.floor(Math.random() * 1e6)}`;
+		const structure = `fc:temp_${system.currentTick}_${Math.floor(Math.random() * 1e6)}`;
+		const blockPos = this._toBlockPos(pos)
+		const p = { x: this.safeOffset, y: 0, z: this.safeOffset };
 
-			this.fastDeclareTickingArea(id, {
-				dimension,
-				from: p,
-				to: p
-			});
-
-			try {
-				//save structure works in unloaded chunks btw
-				this.structManager.createFromWorld(
-					structure,
-					dimension,
-					blockPos,
-					blockPos,
-					{ includeEntities: false }
-				);
-
-				this.structManager.place(structure, dimension, p);
-				this.structManager.delete(structure);
-			} finally {
-				this.tickManager.removeTickingArea(id);
-			}
-
-			//as long as the processing happens before the world updates the ref still exists
-			resolve(dimension.getBlock(p));
+		await this.fastDeclareTickingArea(id, {
+			dimension,
+			from: p,
+			to: p
 		});
+
+		try {
+			//save structure works in unloaded chunks btw
+			this.structManager.createFromWorld(
+				structure,
+				dimension,
+				blockPos,
+				blockPos,
+				{ includeEntities: false }
+			);
+
+			this.structManager.place(structure, dimension, p);
+			this.structManager.delete(structure);
+		} finally {
+			this.tickManager.removeTickingArea(id);
+		}
+
+		//as long as the processing happens before the world updates the ref still exists
+		return dimension.getBlock(p);
 	},
 
 
@@ -250,13 +248,13 @@ export const UnloadedUtils = {
 		})
 	},
 
-	//mojank waits 8 ticks before resolving the promise when it is writable at 3 and readable at 2.
+	//mojank waits 8 ticks before resolving the promise I can resolve it safely at 3.
 	async fastDeclareTickingArea(id, options, accessedNeeded) {
 		return new Promise((resolve, reject) => {
 			this.tickManager.createTickingArea(id, options);
 			system.runTimeout(() => {
 				resolve();
-			}, (accessedNeeded === "read" ? 2 : 3));
+			}, (((system.currentTick - startUpTick) & 1) === 0) && hasReloaded == false ? 1 : 2);
 		})
 	},
 
