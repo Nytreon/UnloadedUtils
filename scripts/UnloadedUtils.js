@@ -254,7 +254,7 @@ export const UnloadedUtils = {
 			this.tickManager.createTickingArea(id, options);
 			system.runTimeout(() => {
 				resolve();
-			}, (((system.currentTick - startUpTick) & 1) === 0) && hasReloaded == false ? 1 : 2);
+			}, 3);
 		})
 	},
 
