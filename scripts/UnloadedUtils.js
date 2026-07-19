@@ -248,13 +248,17 @@ export const UnloadedUtils = {
 		})
 	},
 
-	//mojank waits 8 ticks before resolving the promise I can resolve it safely at 3.
-	async fastDeclareTickingArea(id, options, accessedNeeded) {
+	//mojank waits 8 or more ticks before resolving the promise, I can resolve it safely at 2-3.
+	async fastDeclareTickingArea(id, options) {
 		return new Promise((resolve, reject) => {
 			this.tickManager.createTickingArea(id, options);
-			system.runTimeout(() => {
-				resolve();
-			}, 3);
+			const check = system.runInterval(() => {
+				try {
+					options.dimension.getBlock(options.to).id;
+					system.clearRun(check);
+					resolve();
+				} catch {}
+			}, 1);
 		})
 	},
 
