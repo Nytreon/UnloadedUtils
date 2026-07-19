@@ -35,6 +35,7 @@ Unloaded Chunk Manipulation: Set, fill, and clone blocks in areas players haven'
 | `tickArea()` | `pos`, `ticks`, `dimension` | `Promise<void>` | Creates a temporary ticking area at a location for a set duration. |
 | `setOffset()` | `offset` | `void` | Adjusts the safe coordinate offset zone (Default: `4000000`). |
 | `cacheChunk()` | `pos`, `dimension` | `void` | Caches a given position as a read-only chunk. |
+| `fastDeclareTickingArea()` | `id`, `ticking options`, `"read" ⏐ "write"` | `Promise<void>` | Declares a ticking area much faster than the normal ticking await convention to only 2 to 3 ticks compared to the 8 normally. |
 
 ---
 
@@ -85,3 +86,4 @@ As you may know, normally when interacting with unloaded chunks, script API will
 - **Getting**: Luckily this time around the API does provide a roundabout way to access blocks in these chunks. The createFromWorld function does not throw errors in these chunks allowing me to grab a structure, put it 4 million blocks out and read the content! After that I wrap the data and a few custom callbacks for live data in a VBlock (Virtual Block) and return that to the end user allowing them to dynamically call the block as if it was a real one!
 - **Spawning**: This one was by far the easiest! All it does is find a player, spawn an entity at y 320, and then teleport them to the target area. This works because ScriptAPI all fires in one subtick so functionally it was like the entity spawned there.
 - **Caching**: I found out that if you move the player spawn into an invalid chunk it will become cached, so I simply record the current spawn position, set their spawn position to my desired chunk to cache, and then set it back to what it was previously.
+- **Fast ticking area**: turns out mojang sucks at promise returning and you can read/write to chunks much earlier than the returned promise, so by ignoring the promise and using a custom wait time we can get it sooner so I wrapped it in my own promise to ensure ease of use.
